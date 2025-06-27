@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darede - Prometheus Tech Talk</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-card h2 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .welcome-card p {
+            color: #666;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .prometheus-logo {
+            font-size: 4rem;
+            color: #e6522c;
+            margin-bottom: 1rem;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .action-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 2rem;
+            text-decoration: none;
+            color: #333;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .action-card i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .action-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .action-card p {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #666;
+        }
+
+        .dashboard-card { color: #667eea; }
+        .metrics-card { color: #f093fb; }
+        .load-card { color: #4facfe; }
+        .health-card { color: #43e97b; }
+
+        .footer {
+            background: rgba(0, 0, 0, 0.1);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .live-metrics {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .live-metrics h3 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .welcome-card {
+                padding: 2rem;
+            }
+            
+            .welcome-card h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-chart-line"></i> Darede Tech Talk</h1>
+        <div class="subtitle">Demonstração Interativa do Prometheus</div>
+    </div>
+
+    <div class="container">
+        <div class="welcome-card">
+            <h2>Bem-vindos!</h2>
+            <p>Esta é uma demonstração interativa de como utilizamos o <strong>Prometheus</strong> para monitoramento de aplicações. Durante esta apresentação, vocês poderão interagir com métricas e ver como o prometheus funciona na prática.</p>
+        </div>
+
+        <div class="actions">
+            <a href="/dashboard" class="action-card dashboard-card">
+                <i class="fas fa-tachometer-alt"></i>
+                <h3>Dashboard Live</h3>
+                <p>Visualize métricas em tempo real e veja como o Prometheus coleta e apresenta dados da nossa aplicação.</p>
+            </a>
+
+            <a href="/api/metrics-demo" class="action-card metrics-card">
+                <i class="fas fa-chart-bar"></i>
+                <h3>API de Métricas</h3>
+                <p>Explore as métricas customizadas que criamos para demonstrar eventos de negócio e performance.</p>
+            </a>
+
+            <a href="/simulate-load?type=high" class="action-card load-card">
+                <i class="fas fa-rocket"></i>
+                <h3>Simular Carga</h3>
+                <p>Teste como a aplicação se comporta sob alta carga e veja as métricas sendo geradas em tempo real.</p>
+            </a>
+
+            <a href="/health" class="action-card health-card">
+                <i class="fas fa-heartbeat"></i>
+                <h3>Health Check</h3>
+                <p>Verifique o status da aplicação e veja como implementamos health checks para monitoramento.</p>
+            </a>
+        </div>
+
+        <div class="live-metrics">
+            <h3><i class="fas fa-signal"></i> Métricas ao Vivo</h3>
+            <div class="metrics-grid" id="liveMetrics">
+                <div class="metric-item">
+                    <span class="metric-value" id="requestCount">--</span>
+                    <span class="metric-label">Requisições</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-value" id="activeUsers">--</span>
+                    <span class="metric-label">Usuários Ativos</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-value" id="responseTime">--</span>
+                    <span class="metric-label">Tempo Resposta (ms)</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-value" id="memoryUsage">--</span>
+                    <span class="metric-label">Memória (MB)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Atualiza métricas em tempo real
+        function updateMetrics() {
+            fetch('/api/metrics-demo')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('activeUsers').textContent = data.active_users;
+                    document.getElementById('responseTime').textContent = Math.round(data.response_time * 1000);
+                    document.getElementById('memoryUsage').textContent = data.memory_mb;
+                    
+                    // Incrementa contador de requisições
+                    const currentCount = parseInt(document.getElementById('requestCount').textContent) || 0;
+                    document.getElementById('requestCount').textContent = currentCount + 1;
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar métricas:', error);
+                });
+        }
+
+        // Atualiza métricas a cada 3 segundos
+        setInterval(updateMetrics, 3000);
+        
+        // Primeira chamada imediata
+        updateMetrics();
+
+        // Adiciona efeito de loading nas cartas
+        document.querySelectorAll('.action-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (this.href.includes('/api/') || this.href.includes('/simulate-load')) {
+                    e.preventDefault();
+                    
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i><h3>Carregando...</h3><p>Executando ação...</p>';
+                    
+                    setTimeout(() => {
+                        window.location.href = this.href;
+                    }, 1000);
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

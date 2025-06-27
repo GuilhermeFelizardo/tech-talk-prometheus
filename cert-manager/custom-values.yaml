@@ -1,0 +1,15 @@
+# The following configuration enables integration with AWS Route 53.
+# To utilize this integration, ensure that you follow the steps outlined
+# in the aws-route53-integration folder.
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::022887457179:role/cert-manager-r53"
+
+# Enabling the securityContext is necessary to allow the pod to access files required
+# to assume the IAM role. This setting is required only for AWS Route 53 integration.
+securityContext:
+  enabled: true
+  fsGroup: 1001
+
+# Set other configurations as needed for your setup.
+installCRDs: true

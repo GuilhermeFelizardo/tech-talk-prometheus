@@ -1,0 +1,66 @@
+alertmanager:
+  alertmanagerSpec:
+      storage: 
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            accessModes: ["ReadWriteOnce"]
+            resources:
+                requests:
+                  storage: 10Gi
+                  
+prometheus:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+      nginx.ingress.kubernetes.io/ssl-passthrough: 'false'
+      nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    hosts:
+      - prometheus.guilhermefreis.com
+    tls: 
+    - secretName: certificate-tls
+      hosts:
+      - prometheus.guilhermefreis.com
+    storageSpec: 
+     volumeClaimTemplate:
+       spec:
+         storageClassName: gp3
+         accessModes: ["ReadWriteOnce"]
+         resources:
+           requests:
+             storage: 10Gi
+
+grafana:
+  defaultDashboardsTimezone: America/Sao_Paulo
+  adminPassword: poc-grafana
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+      nginx.ingress.kubernetes.io/ssl-passthrough: 'false'
+      nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    hosts:
+      - grafana.guilhermefreis.com
+    tls: 
+    - secretName: certificate-tls
+      hosts:
+      - grafana.guilhermefreis.com
+  grafana.ini:
+    users:
+      viewers_can_edit: false
+    auth:
+      disable_login_form: false
+      disable_signout_menu: false
+    auth.anonymous:
+      enabled: true
+      org_role: Viewer
+
+defaultRules:
+  create: true
+  rules:
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false

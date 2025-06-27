@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Darede Prometheus</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 300;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .dashboard-container {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .metric-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .metric-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-align: center;
+        }
+
+        .chart-card {
+            grid-column: span 2;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-healthy { background-color: #4CAF50; }
+        .status-warning { background-color: #FF9800; }
+        .status-error { background-color: #F44336; }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            grid-column: span 2;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        .events-log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .event-item {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem;
+            border-left: 3px solid #667eea;
+            padding-left: 0.5rem;
+        }
+
+        .event-timestamp {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .chart-card,
+            .controls {
+                grid-column: span 1;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-tachometer-alt"></i> Dashboard Prometheus - Darede</h1>
+        <a href="/" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Voltar
+        </a>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Métricas Principais -->
+        <div class="metric-card">
+            <h3><i class="fas fa-users"></i> Usuários Ativos</h3>
+            <div class="metric-value" id="activeUsers">--</div>
+            <div class="metric-description">Usuários conectados agora</div>
+            <div class="status-indicator status-healthy pulse"></div>
+        </div>
+
+        <div class="metric-card">
+            <h3><i class="fas fa-clock"></i> Tempo de Resposta</h3>
+            <div class="metric-value" id="responseTime">--</div>
+            <div class="metric-description">Latência média (ms)</div>
+            <div class="status-indicator status-healthy" id="responseStatus"></div>
+        </div>
+
+        <div class="metric-card">
+            <h3><i class="fas fa-memory"></i> Uso de Memória</h3>
+            <div class="metric-value" id="memoryUsage">--</div>
+            <div class="metric-description">Consumo atual (MB)</div>
+            <div class="status-indicator status-healthy" id="memoryStatus"></div>
+        </div>
+
+        <div class="metric-card">
+            <h3><i class="fas fa-chart-line"></i> Requisições/min</h3>
+            <div class="metric-value" id="requestRate">--</div>
+            <div class="metric-description">Taxa de requisições</div>
+            <div class="status-indicator status-healthy"></div>
+        </div>
+
+        <!-- Gráfico de Métricas -->
+        <div class="chart-card">
+            <h3><i class="fas fa-chart-area"></i> Métricas em Tempo Real</h3>
+            <div class="chart-container">
+                <canvas id="metricsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Controles Interativos -->
+        <div class="controls">
+            <button class="control-btn" onclick="simulateLoad('normal')">
+                <i class="fas fa-play"></i>
+                Carga Normal
+            </button>
+            <button class="control-btn" onclick="simulateLoad('high')">
+                <i class="fas fa-rocket"></i>
+                Alta Carga
+            </button>
+            <button class="control-btn" onclick="simulateLoad('error')">
+                <i class="fas fa-exclamation-triangle"></i>
+                Simular Erro
+            </button>
+            <button class="control-btn" onclick="resetMetrics()">
+                <i class="fas fa-refresh"></i>
+                Reset
+            </button>
+        </div>
+
+        <!-- Log de Eventos -->
+        <div class="metric-card" style="grid-column: span 2;">
+            <h3><i class="fas fa-list"></i> Log de Eventos</h3>
+            <div class="events-log" id="eventsLog">
+                <div class="event-item">
+                    <span class="event-timestamp">[Sistema]</span> Dashboard iniciado - Aguardando dados...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do gráfico
+        const ctx = document.getElementById('metricsChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Usuários Ativos',
+                        data: [],
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Tempo Resposta (ms)',
+                        data: [],
+                        borderColor: '#2196F3',
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Memória (MB)',
+                        data: [],
+                        borderColor: '#FF9800',
+                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: 'white' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    y: {
+                        ticks: { color: 'white' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    }
+                }
+            }
+        });
+
+        // Variáveis para métricas
+        let requestCounter = 0;
+        let lastMinuteRequests = [];
+
+        // Função para atualizar métricas
+        function updateMetrics() {
+            fetch('/api/metrics-demo')
+                .then(response => response.json())
+                .then(data => {
+                    // Atualiza valores
+                    document.getElementById('activeUsers').textContent = data.active_users;
+                    document.getElementById('responseTime').textContent = Math.round(data.response_time * 1000);
+                    document.getElementById('memoryUsage').textContent = data.memory_mb;
+                    
+                    // Calcula taxa de requisições por minuto
+                    requestCounter++;
+                    lastMinuteRequests.push(Date.now());
+                    lastMinuteRequests = lastMinuteRequests.filter(time => Date.now() - time < 60000);
+                    document.getElementById('requestRate').textContent = lastMinuteRequests.length;
+                    
+                    // Atualiza indicadores de status
+                    updateStatusIndicators(data);
+                    
+                    // Atualiza gráfico
+                    updateChart(data);
+                    
+                    // Adiciona evento ao log
+                    addEvent(`Métricas atualizadas - Evento: ${data.event_generated}`);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar métricas:', error);
+                    addEvent('Erro ao buscar métricas do servidor');
+                });
+        }
+
+        // Função para atualizar indicadores de status
+        function updateStatusIndicators(data) {
+            const responseStatus = document.getElementById('responseStatus');
+            const memoryStatus = document.getElementById('memoryStatus');
+            
+            // Status do tempo de resposta
+            const responseTimeMs = data.response_time * 1000;
+            if (responseTimeMs < 500) {
+                responseStatus.className = 'status-indicator status-healthy';
+            } else if (responseTimeMs < 1000) {
+                responseStatus.className = 'status-indicator status-warning';
+            } else {
+                responseStatus.className = 'status-indicator status-error';
+            }
+            
+            // Status da memória
+            if (data.memory_mb < 100) {
+                memoryStatus.className = 'status-indicator status-healthy';
+            } else if (data.memory_mb < 200) {
+                memoryStatus.className = 'status-indicator status-warning';
+            } else {
+                memoryStatus.className = 'status-indicator status-error';
+            }
+        }
+
+        // Função para atualizar gráfico
+        function updateChart(data) {
+            const now = new Date().toLocaleTimeString();
+            
+            // Adiciona novo ponto
+            chart.data.labels.push(now);
+            chart.data.datasets[0].data.push(data.active_users);
+            chart.data.datasets[1].data.push(Math.round(data.response_time * 1000));
+            chart.data.datasets[2].data.push(data.memory_mb);
+            
+            // Mantém apenas os últimos 20 pontos
+            if (chart.data.labels.length > 20) {
+                chart.data.labels.shift();
+                chart.data.datasets.forEach(dataset => dataset.data.shift());
+            }
+            
+            chart.update('none');
+        }
+
+        // Função para adicionar evento ao log
+        function addEvent(message) {
+            const eventsLog = document.getElementById('eventsLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const eventDiv = document.createElement('div');
+            eventDiv.className = 'event-item';
+            eventDiv.innerHTML = `<span class="event-timestamp">[${timestamp}]</span> ${message}`;
+            
+            eventsLog.insertBefore(eventDiv, eventsLog.firstChild);
+            
+            // Mantém apenas os últimos 50 eventos
+            while (eventsLog.children.length > 50) {
+                eventsLog.removeChild(eventsLog.lastChild);
+            }
+        }
+
+        // Funções de simulação
+        function simulateLoad(type) {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Simulando...';
+            btn.disabled = true;
+            
+            fetch(`/simulate-load?type=${type}`)
+                .then(response => response.json())
+                .then(data => {
+                    addEvent(`Simulação de carga executada: ${type}`);
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                })
+                .catch(error => {
+                    addEvent(`Erro na simulação: ${error.message}`);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        }
+
+        function resetMetrics() {
+            requestCounter = 0;
+            lastMinuteRequests = [];
+            chart.data.labels = [];
+            chart.data.datasets.forEach(dataset => dataset.data = []);
+            chart.update();
+            
+            document.getElementById('eventsLog').innerHTML = 
+                '<div class="event-item"><span class="event-timestamp">[Sistema]</span> Dashboard resetado</div>';
+            
+            addEvent('Métricas resetadas');
+        }
+
+        // Inicia atualizações automáticas
+        setInterval(updateMetrics, 2000);
+        updateMetrics(); // Primeira chamada imediata
+        
+        // Adiciona evento inicial
+        addEvent('Dashboard carregado com sucesso');
+    </script>
+</body>
+</html> 

@@ -1,0 +1,50 @@
+---
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: production-cluster
+  region: us-east-1
+  version: "1.30"
+  tags:
+    managed: eksctl
+    owner: production-cluster
+    environment: production
+vpc:
+  id: "vpc-0d73d2f5e07f9352c"
+  subnets:
+    public:
+        us-east-1a:
+          id: "subnet-01cda0b5b0ff8a108"
+        us-east-1b:
+          id: "subnet-0b50a0ae537b86792"
+        us-east-1c:
+          id: "subnet-0b6fce12df133749f"
+iam:
+  withOIDC: true
+addons:
+- name: vpc-cni
+  version: latest
+- name: coredns
+  version: latest
+- name: kube-proxy
+  version: latest
+- name: aws-ebs-csi-driver
+  version: latest
+managedNodeGroups:
+  - name: production-cluster-ng-1
+    instanceTypes: ["t3.medium"]
+    spot: true
+    minSize: 1
+    maxSize: 4
+    desiredCapacity: 3
+    volumeSize: 30
+    availabilityZones: ["us-east-1a", "us-east-1b", "us-east-1c"]
+    iam:
+      attachPolicyARNs:
+        - arn:aws:iam::022887457179:policy/nodes-policy
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy

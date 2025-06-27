@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    release: prometheus
+  name: high-memory-usage-rule
+  namespace: monitoring
+spec:
+  groups:
+    - name: high-memory-usage-alerts
+      rules:
+        - alert: HighMemoryUsage
+          expr: |
+            (
+              sum by (container, pod, namespace) (container_memory_working_set_bytes{container!="POD"}) 
+              / 
+              sum by (container, pod, namespace) (kube_pod_container_resource_limits{resource="memory", unit="byte"})
+            ) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High memory usage detected"
+            description: "Memory usage is above 80% of the defined limit for container {{ $labels.container }} in pod {{ $labels.pod }} within the namespace {{ $labels.namespace }}."
