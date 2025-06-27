@@ -33,7 +33,7 @@ The project consists of:
 
 ## Quick Start
 
-### ⚠️ Important Configurations
+### Important Configurations
 
 **BEFORE executing any command, you MUST review and customize the following files with your AWS account configurations:**
 
